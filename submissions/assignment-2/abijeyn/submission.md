@@ -11,10 +11,10 @@ How to use this template:
 
 ## About me
 
-- GitHub username: <answer>
-- Section: <answer>
-- IAM user name that I signed in with: <answer>
-- X: <answer>
+- GitHub username: abijeyn
+- Section: IV - BCSAD
+- IAM user name that I signed in with: bcsad-g07
+- X: 129
 
 ---
 
@@ -22,101 +22,116 @@ How to use this template:
 
 ### A1. The VPC
 
-Default VPC IPv4 CIDR:
+Default VPC IPv4 CIDR: 
 
-<answer>
+172.31.0.0/16
 
 Number of addresses in that CIDR:
 
-<answer>
+65,536
 
 ### A2. The subnets
 
 | Availability Zone | IPv4 CIDR |
 | --- | --- |
-| <answer> | <answer> |
-| <answer> | <answer> |
-| <answer> | <answer> |
+| ap-southeast-1a | 172.31.32.0/20 |
+| ap-southeast-1b | 172.31.16.0/20 |
+| ap-southeast-1c | 172.31.0.0/20 |
 
 Screenshot 1. Save it as `screenshot-1-subnets.png` in your folder. The image line below shows it.
 
 ![Screenshot 1: subnet list](screenshot-1-subnets.png)
 
+
 ### A3. Available addresses
 
 Available IPv4 addresses in each subnet:
 
-<answer>
+ap-southeast-1a (172.31.32.0/20): 4090   
+ap-southeast-1b (172.31.16.0/20): 4091   
+ap-southeast-1c (172.31.0.0/20): 4091 
 
 Why is the number lower than 4,096?
 
-<answer>
+AWS reserves 5 IP addresses in every subnet for internal networking purposes:
+1. The first address (Network address)
+2. The second address (VPC router)
+3. The third address (AWS DNS server)
+4. The fourth address (Future AWS use)
+5. The last address (Network broadcast address)
+
+Subtracting these 5 reserved addresses from the 4,096 addresses of a /20 block leaves 4,091 available IP addresses (4096 - 5 = 4091).
 
 What uses the missing address in the subnet with the lowest number?
 
-<answer>
+The missing address in ap-southeast-1a (which has 4090 instead of 4091) is in use by an active Elastic Network Interface (ENI), such as a running or stopped EC2 instance deployed in that subnet.
 
 ### A4. The route table
 
 | Destination | Target |
 | --- | --- |
-| <answer> | <answer> |
-| <answer> | <answer> |
+| 172.31.0.0/16 | local |
+| 0.0.0.0/0 | igw-... |
 
 Screenshot 2. Save it as `screenshot-2-routes.png` in your folder. The image line below shows it.
 
 ![Screenshot 2: routes of the route table](screenshot-2-routes.png)
 
+
 ### A5. Public or private
 
 Are the default subnets public or private? Which route proves it?
 
-<answer>
+The default subnets are public. The route that proves this is 0.0.0.0/0 targeting the internet gateway (igw-...), which allows traffic to route directly to and from the public internet.
 
 ### A6. The internet gateway
 
 State of the internet gateway:
 
-<answer>
+attached
 
 What happens to the default subnets if the gateway is detached?
 
-<answer>
+All instances within the default subnets will lose their direct connection to the public internet, preventing them from sending or receiving external internet traffic.
 
 ### A7. NAT gateways
 
 Number of NAT gateways:
 
-<answer>
+0
 
 Can a server in a new private subnet download updates? Why?
 
-<answer>
+No. A private subnet has no direct route to an Internet Gateway and requires a NAT Gateway deployed in a public subnet to route outbound requests to the internet; because there are 0 NAT Gateways in this VPC, outbound internet connectivity is unavailable.
 
 ### A8. The network ACL
 
 | Rule number | Source | Allow or Deny |
 | --- | --- | --- |
-| <answer> | <answer> | <answer> |
-| <answer> | <answer> | <answer> |
+| 100 | 0.0.0.0/0 | Allow |
+| * | 0.0.0.0/0 | Deny |
 
 How is a network ACL different from a security group?
 
-<answer>
+A network ACL operates at the subnet level and is stateless (requiring explicit inbound and outbound rules), whereas a security group operates at the individual instance or network interface level and is stateful (automatically allowing return traffic).
 
 Screenshot 3. Save it as `screenshot-3-network-acl.png` in your folder. The image line below shows it.
 
-![Screenshot 3: inbound rules of the network ACL](screenshot-3-network-acl.png)
+![Screenshot 3: inbound rules of the network ACL](screenshot-3-network-acl.jpg)
+
 
 ### A9. The default security group
 
 Inbound rule (type and source):
 
-<answer>
+- Type: All traffic
+- Protocol: All
+- Port range: All
+- Source: sg-0c5b6d4081cf0a534 (the security group itself)
 
 Which resources can send traffic to an instance that uses it?
 
-<answer>
+Only other instances or AWS resources that are explicitly assigned to this exact same default security group.
 
 ---
 
@@ -124,8 +139,8 @@ Which resources can send traffic to an instance that uses it?
 
 ### B1. Plan two subnets
 
-- Public subnet CIDR: <answer>
-- Private subnet CIDR: <answer>
+- Public subnet CIDR: 10.129.0.0/24
+- Private subnet CIDR: 10.129.1.0/24
 
 ### B2. Route tables
 
@@ -133,20 +148,20 @@ Route table of the public subnet:
 
 | Destination | Target |
 | --- | --- |
-| <answer> | <answer> |
-| <answer> | <answer> |
+| 10.129.0.0/16 | local |
+| 0.0.0.0/0 | internet gateway |
 
 Route table of the private subnet:
 
 | Destination | Target |
 | --- | --- |
-| <answer> | <answer> |
+| 10.129.0.0/16 | local |
 
 ### B3. My VPC diagram
 
 Tool used (Excalidraw, draw.io, Lucidchart, or paper):
 
-<answer>
+Excalidraw
 
 Save your diagram as `vpc-diagram.png` in your folder. The image line below shows it.
 
@@ -156,20 +171,22 @@ Save your diagram as `vpc-diagram.png` in your folder. The image line below show
 
 Can you still open the web page from your laptop? Why?
 
-<answer>
+No. The route `0.0.0.0/0` targeting the Internet Gateway is the path that directs external internet traffic into and out of the VPC; without this default route, requests from your laptop cannot reach the instance, nor can return packets leave the VPC.
 
 Can the instance still reach another instance in the VPC? Why?
 
-<answer>
+Yes. The local route (`172.31.0.0/16 local`) remains active in the route table, which preserves full private network connectivity between all subnets and instances located within the same VPC.
 
 ### B5. Place a database
 
 Which subnet gets the database? Why?
 
-<answer>
+The private subnet (`10.129.1.0/24`). A database contains sensitive application data and should never be directly accessible from the public internet; keeping it in a private subnet shields it from external inbound attacks while still allowing backend application servers in the public subnet to reach it over the local VPC network route.
 
 ### B6. My question about VPCs
 
 What is your question, and what made you think of it?
 
-<answer>
+Question: When architecting high-availability systems across multiple Availability Zones, how does an organization balance the cost of running dedicated NAT Gateways in each private AZ against the reliability risk of using a single shared NAT Gateway?
+
+What made me think of it: While reviewing the NAT Gateway concept in Section 10, the README mentions that NAT Gateways incur hourly costs and default VPCs don't include them, which raised practical questions about fault tolerance versus operational expenses in production cloud environments.
